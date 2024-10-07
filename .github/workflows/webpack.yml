@@ -1,28 +1,33 @@
-name: NodeJS with Webpack
+// index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Chat Application</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"></script>
+</head>
+<body>
+    <div id="messages"></div>
+    <input type="text" id="message">
+    <button id="send">Send</button>
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    <script src="app.js"></script>
+</body>
+</html>
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+// app.js
+const socket = io();
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
+const messagesDiv = document.getElementById('messages');
+const messageInput = document.getElementById('message');
+const sendButton = document.getElementById('send');
 
-    steps:
-    - uses: actions/checkout@v4
+socket.on('message', (data) => {
+    const message = document.createElement('p');
+    message.textContent = data;
+    messagesDiv.appendChild(message);
+});
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: Build
-      run: |
-        npm install
-        npx webpack
+sendButton.addEventListener('click', () => {
+    socket.emit('message', messageInput.value);
+    messageInput.value = '';
+});
